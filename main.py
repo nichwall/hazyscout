@@ -71,7 +71,7 @@ class State:
     def removeGraph(self, index=-1):
         if (index == -1):
             index = self.graphCount - 1
-        if (index >= 0 and index < 4):
+        if (index > 0 and index < 4):
             print "Popping"
             self.graphCount -= 1
             self.graphs.pop(index)
@@ -183,6 +183,14 @@ def drawGraph(canvas, state):
 
                 canvas.create_line(j*smallGraphDimensions[0]+50,k*smallGraphDimensions[1]+50,j*smallGraphDimensions[0]+50,(k+1)*smallGraphDimensions[1]-75, fill='white')
                 canvas.create_line(j*smallGraphDimensions[0]+50,(k+1)*smallGraphDimensions[1]-75,(j+1)*smallGraphDimensions[0]-50,(k+1)*smallGraphDimensions[1]-75, fill='white')
+                # Horizontal ticks
+                h_dist = (smallGraphDimensions[0]-100)/matchCount
+                for i in range(matchCount):
+                    canvas.create_line(j*smallGraphDimensions[0]+50+h_dist*(i+1),(k+1)*smallGraphDimensions[1]-65,j*smallGraphDimensions[0]+50+h_dist*(i+1),(k+1)*smallGraphDimensions[1]-75, fill='white')
+                # Vertical ticks
+                v_dist = (smallGraphDimensions[1]-125)/(masterGraphData[currentGraph]['tickCount']-1)
+                for i in range(masterGraphData[currentGraph]['tickCount']):
+                    canvas.create_line(j*smallGraphDimensions[0]+50,k*smallGraphDimensions[1]+v_dist*i+50,j*smallGraphDimensions[0]+40,k*smallGraphDimensions[1]+v_dist*i+50, fill='white')
 
     # Testing solid vs dashed
     canvas.create_line(100,200,150,200, fill='red',     dash=(4,4), width=4)
