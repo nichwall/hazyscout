@@ -5,6 +5,8 @@ from Tkinter import *
 
 UNIQUE_TEAMS = 6
 
+colors = ['red','green','blue','yellow','orange','magenta']
+
 # Globals for graph data
 winHeight = 0
 winWidth = 0
@@ -58,12 +60,6 @@ class State:
         self.graphCount = 1
         self.teams = [0]*UNIQUE_TEAMS
         self.graphs = [0]*self.graphCount
-    def getGraphCount(self):
-        return self.graphCount
-    def getTeams(self):
-        return self.teams
-    def getGraphs(self):
-        return self.graphs
     def addGraph(self):
         if (self.graphCount < 4):
             self.graphCount += 1
@@ -96,7 +92,9 @@ def loadConfigFile():
             tempD['name']          =     tempSplit[1]  # Name of graph, displayed in dropdown
             tempD['tickCount']     = int(tempSplit[2]) # Count of ticks on the y-axis
             tempD['solidCol']      = int(tempSplit[3]) # Column in the CSV file of the line that will be solid
-            tempD['dashCol']       = int(tempSplit[4]) # Column in the CSV file of the line that will be dashed
+            tempD['dashCol']       =                -1 # Default to -1
+            if (len(tempSplit) == 5):
+                tempD['dashCol']   = int(tempSplit[4]) # Column in the CSV file of the line that will be dashed
 
             masterGraphData.append(tempD)
 
@@ -115,26 +113,75 @@ def loadMatchData():
         print "len: ",len(readed)
         matchFile.close()
 
+        # Convert the read array to 2D array
+        tempArr = []
+        for i in readed:
+            tempArr.append(i.split(","))
+        readed = tempArr
+
         # Sort the data from the teams by team/match number for easier graphing
-        tempR = readed.split(",")
-        while len(tempR) != 0:
+        while len(readed) != 0:
+            print readed
             minIndex = 0
             minTeam = 0
             minMatch = -100
-            for i in range(len(tempR)):
-                tS = tempR[i].split(",")
-                # Check if the team number is the smallest thus far
-                if tS[0] < minTeam:
-                    minIndex = i
-                    minTeam = tS[0]
-                    minMatch = tS[1]
-                elif tS[0] == minTeam and tS[1] < minMatch:
-                    minIndex = i
-                    minMatch = tS[1]
+            for j in range(len(readed)):
+                tempR = readed[j]
+                for i in range(len(tempR)):
+                    tS = tempR[i].split(",")
+                    # Check if the team number is the smallest thus far
+                    if tS[0] < minTeam:
+                        minIndex = i
+                        minTeam = tS[0]
+                        minMatch = tS[1]
+                    elif tS[0] == minTeam and tS[1] < minMatch:
+                        minIndex = i
+                        minMatch = tS[1]
             matchData.append(tempR.pop(minIndex))
+            if tempR[0] not in teamList:
+                tempList.append(int(tempR))
     except:
         print "Error: Invalid match file"
         sys.exit(2)
+
+def drawTeam(canvas, graphNumber, minX, minY, maxX, maxY, teamNumber, yTicks, xTicks, color):
+    # Offset each of the teams a little bit so that they don't overlap
+    yOffset = 0
+    if color == 'red':
+        yOffset = -5
+    elif color == 'green':
+        yOffset = -3
+    elif color == 'blue':
+        yOffset = -1
+    elif color == 'yellow':
+        yOffset = 1
+    elif color == 'orange':
+        yOffset = 3
+    elif color == 'magenta':
+        yOffset = 5
+
+    h_dist = (maxX-minX)/xTicks
+    v_dist = (maxY-minY)/yTicks
+    solidCol = masterGraphData[graphNumber]['solidCol']
+    dashCol = masterGraphData[graphNumber]['dashCol']
+
+    lastSolidPoint = (-10,-10)
+    lastDashPoint  = (-10,-10)
+    for i in range(len(matchList)):
+        if (matchList[i][0] == teamNumber):
+            # Solid line
+            xPos = matchList[i][1]*h_dist+minX
+            yPos = maxY-(matchList[i][solidCol]+yOffset)
+            if (lastSolidPoint[0] > -10):
+                canvas.create_line(lastSolidPoint, xPos, yPos, fill=color, width=3)
+            lastSolidPoint = (xPos, yPos)
+
+            # Dashed line
+            if (dashCol != -1):
+                yPos = maxY-(matchList[i][dashCol]+yOffset)
+                if (lastDashPoint[0] > -10):
+                    canvas.create_line(lastDashPoint, xPos, yPos, fill=color, width=3, dash=(4,4))
+                lastDashPoint = (xPos, yPos)
 
 
 def drawGraph(canvas, state):
@@ -193,21 +240,26 @@ def drawGraph(canvas, state):
                     canvas.create_line(j*smallGraphDimensions[0]+50,k*smallGraphDimensions[1]+v_dist*i+50,j*smallGraphDimensions[0]+40,k*smallGraphDimensions[1]+v_dist*i+50, fill='white')
 
     # Testing solid vs dashed
-    canvas.create_line(100,200,150,200, fill='red',     dash=(4,4), width=4)
-    canvas.create_line(100,210,150,210, fill='red',                 width=4)
-    canvas.create_line(100,250,150,250, fill='green',   dash=(4,4), width=4)
-    canvas.create_line(100,260,150,260, fill='green',               width=4)
-    canvas.create_line(100,300,150,300, fill='blue',    dash=(4,4), width=4)
-    canvas.create_line(100,310,150,310, fill='blue',                width=4)
-    canvas.create_line(100,350,150,350, fill='yellow',  dash=(4,4), width=4)
-    canvas.create_line(100,360,150,360, fill='yellow',              width=4)
-    canvas.create_line(100,400,150,400, fill='orange',  dash=(4,4), width=4)
-    canvas.create_line(100,410,150,410, fill='orange',              width=4)
-    canvas.create_line(100,450,150,450, fill='magenta', dash=(4,4), width=4)
-    canvas.create_line(100,460,150,460, fill='magenta',             width=4)
+    canvas.create_line(100,200,150,200, fill='red',     dash=(4,4), width=3)
+    canvas.create_line(100,210,150,210, fill='red',                 width=3)
+    canvas.create_line(100,250,150,250, fill='green',   dash=(4,4), width=3)
+    canvas.create_line(100,260,150,260, fill='green',               width=3)
+    canvas.create_line(100,300,150,300, fill='blue',    dash=(4,4), width=3)
+    canvas.create_line(100,310,150,310, fill='blue',                width=3)
+    canvas.create_line(100,350,150,350, fill='yellow',  dash=(4,4), width=3)
+    canvas.create_line(100,360,150,360, fill='yellow',              width=3)
+    canvas.create_line(100,400,150,400, fill='orange',  dash=(4,4), width=3)
+    canvas.create_line(100,410,150,410, fill='orange',              width=3)
+    canvas.create_line(100,450,150,450, fill='magenta', dash=(4,4), width=3)
+    canvas.create_line(100,460,150,460, fill='magenta',             width=3)
 
-def drawComments(canvas, section):
-    pass
+def drawComments(canvas, state):
+    teams = state.teams
+
+    print teamSelection[0]
+    for i in range(UNIQUE_TEAMS):
+        canvas.create_rectangle(windowDimensions[0]-commentsDimensions[0],commentsDimensions[1]*i,windowDimensions[0],commentsDimensions[1]*(i+1), fill=colors[i], outline='white')
+        teamSelection[i].place(x=1000,y=commentsDimensions[1]*i+50)
 
 def key(event):
     if event.char == event.keysym:
@@ -215,22 +267,26 @@ def key(event):
     if event.char == 'w':
         print "Increasing..."
         states[currentState].addGraph()
-        drawGraph(canvas,states[currentState])
-    elif event.char =='s':
+    elif event.char == 's':
         print "Decreasing..."
         states[currentState].removeGraph()
-        drawGraph(canvas,states[currentState])
+
+    for var in teamVarsForDropdown:
+        print teamList[0]
+    drawGraph(canvas,states[currentState])
 
 matchData = []
 masterGraphData = []
 matchCount = 6
 states = [State()]*9
 currentState = 0
+teamList = [0,2,3,4,9]
 
-windowDimensions = (1024,576)
+windowDimensions = (1024,660)
 commentsDimensions = (224,windowDimensions[1]/6)
 largeGraphDimensions = (800,windowDimensions[1])
 smallGraphDimensions = (400,windowDimensions[1]/2)
+
 root = Tk()
 root.geometry("%dx%d" % windowDimensions)
 root.title("Hazy Scout")
@@ -238,12 +294,17 @@ canvas = Canvas(root, width=windowDimensions[0], height=windowDimensions[1])
 canvas.pack()
 
 loadConfigFile()
+#loadMatchData()
+
+teamVarsForDropdown = [StringVar(root) for var in colors]
+teamSelection = [OptionMenu(root, var, *teamList) for var in teamVarsForDropdown]
 
 states[currentState].addGraph()
 states[currentState].graphs[1]=1
 states[currentState].addGraph()
 states[currentState].addGraph()
 drawGraph(canvas,states[currentState])
+drawComments(canvas,states[currentState])
 
 #text = Text(root)
 #text.insert(INSERT,"Testing things! Lots and lots of letters....a eu8fagoc u7a,f.g u78aeod uba7fcgu dthjomqeufgcdhtao emugcaoht epm.,tha pmacoth umeoauthym.,9ugth nmeu.pugchte nom.,89geh otmugoh tem.pguoeh utrmcue8arc meuoigreh tmuearogeh emuorch utcmuorc tcm.rcoe m")
