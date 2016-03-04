@@ -37,14 +37,13 @@ class State:
 ######################
 # Configuration file #
 ######################
-masterGraphData = []
 def loadConfigFile():
     try:
         configData = yaml.load(open("config.yaml"))
-        graphCount = configData['matchCount']
+        matchCount = configData['matchCount']
         for i in range(len(configData['graphs'])):
             if configData['graphs'][i]['id'] == i:
-                print configData['graphs'][i]
+                #print configData['graphs'][i]
                 if configData['graphs'][i]['xTickCount'] == "matchCount":
                     configData['graphs'][i]['xTickCount'] = matchCount
                 masterGraphData.append(configData['graphs'][i])
@@ -57,7 +56,7 @@ def loadConfigFile():
 # Load the team data #
 ######################
 def loadMatchData():
-    try:
+    #try:
         matchFile = open("matches.csv",'r')
         readed = matchFile.read().split("\n")[1:-1]
         matchFile.close()
@@ -71,13 +70,11 @@ def loadMatchData():
 
         # Sort the data from the teams by team/match number for easier graphing
         while len(readed) != 0:
-            print readed
             minIndex = 0
             minTeam = 0
             minMatch = 0
             for j in range(len(readed)):
                 tempR = readed[j]
-                print tempR
                 # Check if the team number is the smallest thus far
                 if tempR[0] < minTeam:
                     minIndex = i
@@ -88,10 +85,10 @@ def loadMatchData():
                     minMatch = tempR[1]
             matchData.append(readed.pop(minIndex))
             if matchData[-1][0] not in teamList:
-                teamList.append(tempR[0])
-    except:
-        print "Error: Invalid match file"
-        sys.exit(2)
+                teamList.append(matchData[-1][0])
+    #except:
+    #    print "Error: Invalid match file"
+    #    sys.exit(2)
 
 def drawTeam(canvas, graphNumber, minX, minY, maxX, maxY, teamNumber, yTicks, xTicks, color):
     # Offset each of the teams a little bit so that they don't overlap
@@ -109,7 +106,6 @@ def drawTeam(canvas, graphNumber, minX, minY, maxX, maxY, teamNumber, yTicks, xT
     elif color == 'magenta':
         yOffset = 5
 
-    print "maxX:",maxX,"minX:",minX,"Ticks:",xTicks
     h_dist = (maxX-minX)/xTicks
     v_dist = (maxY-minY)/yTicks
     solidCol = masterGraphData[graphNumber]['solidCol']
@@ -147,7 +143,6 @@ def drawGraph(canvas, state):
     if (state.graphCount != 1):
         xCount = 2
     yCount = (state.graphCount+1)/2
-    print "XCount:",xCount,"YCount:",yCount
     for z in range(state.graphCount):
             j = z%2
             k = z/2
@@ -159,7 +154,7 @@ def drawGraph(canvas, state):
             # Horizontal line
             canvas.create_line(j*largeGraphDimensions[0]/xCount+50,(k+1)*largeGraphDimensions[1]/yCount-75,(j+1)*largeGraphDimensions[0]/xCount-50,(k+1)*largeGraphDimensions[1]/yCount-75, fill='white')
             # Horizontal ticks
-            h_dist = (largeGraphDimensions[0]/xCount-100)/matchCount
+            h_dist = (largeGraphDimensions[0]/xCount-100)/masterGraphData[currentGraph]['xTickCount']
             for i in range(matchCount):
                 canvas.create_line(j*largeGraphDimensions[0]/xCount+50+h_dist*(i+1),(k+1)*largeGraphDimensions[1]/yCount-65,j*largeGraphDimensions[0]/xCount+50+h_dist*(i+1),(k+1)*largeGraphDimensions[1]/yCount-75, fill='white')
             # Vertical ticks
@@ -168,53 +163,36 @@ def drawGraph(canvas, state):
                 canvas.create_line(j*largeGraphDimensions[0]/xCount+50,k*largeGraphDimensions[1]/yCount+v_dist*i+50,j*largeGraphDimensions[0]/xCount+40,k*largeGraphDimensions[1]/yCount+v_dist*i+50, fill='white')
 
             # Once the axis are drawn, graph the team
-            for i in range(len(teamVarsForDropdown)):
-                drawTeam(canvas, currentGraph, j*largeGraphDimensions[0]/xCount+50, k*largeGraphDimensions[1]/yCount+50, (j+1)*largeGraphDimensions[0]/xCount-50, (k+1)*largeGraphDimensions[1]/yCount-75, teamVarsForDropdown[i].get(), masterGraphData[currentGraph]['yTickCount'], masterGraphData[currentGraph]['xTickCount'], colors[i])
-
-    # Testing solid vs dashed
-    canvas.create_line(100,200,150,200, fill='red',     dash=(4,4), width=3)
-    canvas.create_line(100,210,150,210, fill='red',                 width=3)
-    canvas.create_line(100,250,150,250, fill='green',   dash=(4,4), width=3)
-    canvas.create_line(100,260,150,260, fill='green',               width=3)
-    canvas.create_line(100,300,150,300, fill='blue',    dash=(4,4), width=3)
-    canvas.create_line(100,310,150,310, fill='blue',                width=3)
-    canvas.create_line(100,350,150,350, fill='yellow',  dash=(4,4), width=3)
-    canvas.create_line(100,360,150,360, fill='yellow',              width=3)
-    canvas.create_line(100,400,150,400, fill='orange',  dash=(4,4), width=3)
-    canvas.create_line(100,410,150,410, fill='orange',              width=3)
-    canvas.create_line(100,450,150,450, fill='magenta', dash=(4,4), width=3)
-    canvas.create_line(100,460,150,460, fill='magenta',             width=3)
+            #for i in range(len(teamVarsForDropdown)):
 
 def drawComments(canvas, state):
-    teams = state.teams
-
-    print teamSelection[0]
     for i in range(UNIQUE_TEAMS):
-        canvas.create_rectangle(windowDimensions[0]-commentsDimensions[0],commentsDimensions[1]*i,windowDimensions[0],commentsDimensions[1]*(i+1), fill=colors[i], outline='white')
+        canvas.create_rectangle(windowDimensions[0]-commentsDimensions[0], commentsDimensions[1]*i, windowDimensions[0], commentsDimensions[1]*(i+1), fill=colors[i], outline='white')
         teamSelection[i].place(x=1000,y=commentsDimensions[1]*i+50)
+        # Update the teams in the state for graphing
+        state.teams[i] = int(teamSelection[i].get("1.0",'end-1c'))
+    print "Teams: ",state.teams
 
 def key(event):
     if event.char == event.keysym:
-        print 'Normal key %s' % event.char
+        print "Normal key press: %s" % event.char
 
     if event.char == 'w':
-        print "Increasing..."
+        print "Increasing"
         states[currentState].addGraph()
     elif event.char == 's':
-        print "Decreasing..."
+        print "Decreasing"
         states[currentState].removeGraph()
     elif event.char == 'q':
         print "Exit!"
         sys.exit(0)
 
-    #for var in teamVarsForDropdown:
-    for var in teamVarsForDropdown:
-        print var.get()
-    drawGraph(canvas,states[currentState])
+    drawGraph(canvas, states[currentState])
+    drawComments(canvas, states[currentState])
 
+matchCount = 6
 matchData = []
 masterGraphData = []
-matchCount = 6 # Default, just in case
 states = [State()]*9
 currentState = 0
 teamList = [0]
@@ -235,10 +213,14 @@ root.title("Hazy Scout")
 canvas = Canvas(root, width=windowDimensions[0], height=windowDimensions[1])
 canvas.pack()
 
+#teamVarsForDropdown = [StringVar(root) for var in colors]
+#teamSelection = [OptionMenu(root, var, *teamList) for var in teamVarsForDropdown]
+#for i in teamVarsForDropdown:
+#    i.set(0)
 teamVarsForDropdown = [StringVar(root) for var in colors]
-teamSelection = [OptionMenu(root, var, *teamList) for var in teamVarsForDropdown]
-for i in teamVarsForDropdown:
-    i.set(0)
+teamSelection = [Text(root, width=5, height=1) for var in teamVarsForDropdown]
+for i in teamSelection:
+    i.insert(END,"0")
 
 drawGraph(canvas,states[currentState])
 drawComments(canvas,states[currentState])
@@ -255,8 +237,7 @@ sys.exit(0)
 var = tk.StringVar(root)
 var.set('red')
 
-choices = ['red', 'green', 'blue', 'yellow', 'white', 'magenta']
-option = tk.OptionMenu(root, var, *choices)
+option = tk.OptionMenu(root, var, *colors)
 option.pack(side='left', padx=10, pady=10)
 
 button = tk.Button(root, text='check value selected', command=select)
