@@ -58,13 +58,13 @@ def loadMatchData():
     try:
         matchFile = open("matches.csv",'r')
         readed = matchFile.read().split("\n")[1:-1]
-        print "len: ",len(readed)
         matchFile.close()
 
         # Convert the read array to 2D array
         tempArr = []
         for i in readed:
             tempArr.append(i.split(","))
+            tempArr[-1] = map(int, tempArr[-1]) # Converts the array to an array of ints
         readed = tempArr
 
         # Sort the data from the teams by team/match number for easier graphing
@@ -72,22 +72,21 @@ def loadMatchData():
             print readed
             minIndex = 0
             minTeam = 0
-            minMatch = -100
+            minMatch = 0
             for j in range(len(readed)):
                 tempR = readed[j]
-                for i in range(len(tempR)):
-                    tS = tempR[i].split(",")
-                    # Check if the team number is the smallest thus far
-                    if tS[0] < minTeam:
-                        minIndex = i
-                        minTeam = tS[0]
-                        minMatch = tS[1]
-                    elif tS[0] == minTeam and tS[1] < minMatch:
-                        minIndex = i
-                        minMatch = tS[1]
-            matchData.append(tempR.pop(minIndex))
-            if tempR[0] not in teamList:
-                teamList.append(int(tempR[0]))
+                print tempR
+                # Check if the team number is the smallest thus far
+                if tempR[0] < minTeam:
+                    minIndex = i
+                    minTeam = tempR[0]
+                    minMatch = tempR[1]
+                elif tempR[0] == minTeam and tempR[1] < minMatch:
+                    minIndex = i
+                    minMatch = tempR[1]
+            matchData.append(readed.pop(minIndex))
+            if matchData[-1][0] not in teamList:
+                teamList.append(tempR[0])
     except:
         print "Error: Invalid match file"
         sys.exit(2)
@@ -216,6 +215,7 @@ def drawComments(canvas, state):
 def key(event):
     if event.char == event.keysym:
         print 'Normal key %s' % event.char
+
     if event.char == 'w':
         print "Increasing..."
         states[currentState].addGraph()
@@ -236,7 +236,12 @@ masterGraphData = []
 matchCount = 6 # Default, just in case
 states = [State()]*9
 currentState = 0
-teamList = [0,2,3,4,9]
+teamList = [0]
+
+loadConfigFile()
+loadMatchData()
+
+print "TEAMLIST:",teamList
 
 windowDimensions = (1024,660)
 commentsDimensions = (224,windowDimensions[1]/6)
@@ -248,9 +253,6 @@ root.geometry("%dx%d" % windowDimensions)
 root.title("Hazy Scout")
 canvas = Canvas(root, width=windowDimensions[0], height=windowDimensions[1])
 canvas.pack()
-
-loadConfigFile()
-#loadMatchData()
 
 teamVarsForDropdown = [StringVar(root) for var in colors]
 teamSelection = [OptionMenu(root, var, *teamList) for var in teamVarsForDropdown]
