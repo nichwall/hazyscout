@@ -1,0 +1,66 @@
+matchCount:     6
+
+graphs:
+    - id:           0
+      name:         High Goal
+      xTickCount:   matchCount
+      yTickCount:   7
+      solidCol:     2
+      dashCol:      -1
+      xCols:        [-1]
+    - id:           1
+      name:         Low Goal
+      xTickCount:   matchCount
+      yTickCount:   7
+      solidCol:     3
+      dashCol:      -1
+      xCols:        [-1]
+    - id:           2
+      name:         All Goal
+      xTickCount:   matchCount
+      yTickCount:   7
+      solidCol:     2
+      dashCol:      3
+      xCols:        [-1]
+    - id:           3
+      name:         Defenses
+      xTickCount:   5
+      yTickCount:   3
+      solidCol:     -1
+      dashCol:      -1
+      xCols:        [4,5,6,7,8]
+    - id:           4
+      name:         Human Player
+      xTickCount:   matchCount
+      yTickCount:   3
+      solidCol:     9
+      dashCol:      -1
+      xCols:        [-1]
+    - id:           5
+      name:         Breaks
+      xTickCount:   matchCount
+      yTickCount:   4
+      solidCol:     10
+      dashCol:      -1
+      xCols:        [-1]
+    - id:           6
+      name:         Fouls
+      xTickCount:   matchCount
+      yTickCount:   5
+      solidCol:     11
+      dashCol:      -1
+      xCols:        [-1]
+    - id:           7
+      name:         Break/Match
+      xTickCount:   matchCount
+      yTickCount:   5
+      solidCol:     10
+      dashCol:      11
+      xCols:        [-1]
+    - id:           8
+      name:         Scaling
+      xTickCount:   matchCount
+      yTickCount:   2
+      solidCol:     12
+      dashCol:      -1
+      xCols:        [-1]

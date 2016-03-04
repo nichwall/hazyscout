@@ -44,7 +44,7 @@ class Graph:
             self.baseX = winWidth/2
         self.graphNumber = initalGraph # Which graph to display
         self.xTicks = matchCount # Matches
-        self.yTicks = masterGraphData[initialGraph]['tickCount'] # Scores
+        self.yTicks = masterGraphData[initialGraph]['ytickCount'] # Scores
         self.graphID = graphID # Used to tell the graph where it appears on the screen
 # Draw the graph to the screen
 
@@ -90,7 +90,7 @@ def loadConfigFile():
             tempD = {}
             tempD['id']            = int(tempSplit[0]) # Numerical id of graph, used in Graph as graphNumber
             tempD['name']          =     tempSplit[1]  # Name of graph, displayed in dropdown
-            tempD['tickCount']     = int(tempSplit[2]) # Count of ticks on the y-axis
+            tempD['ytickCount']     = int(tempSplit[2]) # Count of ticks on the y-axis
             tempD['solidCol']      = int(tempSplit[3]) # Column in the CSV file of the line that will be solid
             tempD['dashCol']       =                -1 # Default to -1
             if (len(tempSplit) == 5):
@@ -203,8 +203,8 @@ def drawGraph(canvas, state):
         for i in range(matchCount):
             canvas.create_line(125+h_dist*(i+1),largeGraphDimensions[1]-100,125+h_dist*(i+1),largeGraphDimensions[1]-90, fill='white')
         # Vertical ticks
-        v_dist = (largeGraphDimensions[1]-175)/(masterGraphData[currentGraph]['tickCount']-1)
-        for i in range(masterGraphData[currentGraph]['tickCount']):
+        v_dist = (largeGraphDimensions[1]-175)/(masterGraphData[currentGraph]['ytickCount']-1)
+        for i in range(masterGraphData[currentGraph]['ytickCount']):
             canvas.create_line(115,75+v_dist*i,125,75+v_dist*i, fill='white')
 
         # TODO Add the lines for the different teams
@@ -219,14 +219,15 @@ def drawGraph(canvas, state):
             for i in range(matchCount):
                 canvas.create_line(j*smallGraphDimensions[0]+50+h_dist*(i+1),windowDimensions[1]-100,j*smallGraphDimensions[0]+50+h_dist*(i+1),windowDimensions[1]-90, fill='white')
             # Vertical ticks
-            v_dist = (largeGraphDimensions[1]-175)/(masterGraphData[currentGraph]['tickCount']-1)
+            v_dist = (largeGraphDimensions[1]-175)/(masterGraphData[currentGraph]['ytickCount']-1)
             print largeGraphDimensions[1]-175
-            for i in range(masterGraphData[currentGraph]['tickCount']):
+            for i in range(masterGraphData[currentGraph]['ytickCount']):
                 canvas.create_line(j*smallGraphDimensions[0]+40,v_dist*i+75,j*smallGraphDimensions[0]+50,v_dist*i+75, fill='white')
     else:
         for j in range(2):
             for k in range(2):
                 currentGraph = state.graphs[j+k*2]
+                print "Number: ",state.graphCount,"\tCurrentGraph: ",currentGraph
 
                 canvas.create_line(j*smallGraphDimensions[0]+50,k*smallGraphDimensions[1]+50,j*smallGraphDimensions[0]+50,(k+1)*smallGraphDimensions[1]-75, fill='white')
                 canvas.create_line(j*smallGraphDimensions[0]+50,(k+1)*smallGraphDimensions[1]-75,(j+1)*smallGraphDimensions[0]-50,(k+1)*smallGraphDimensions[1]-75, fill='white')
@@ -235,8 +236,8 @@ def drawGraph(canvas, state):
                 for i in range(matchCount):
                     canvas.create_line(j*smallGraphDimensions[0]+50+h_dist*(i+1),(k+1)*smallGraphDimensions[1]-65,j*smallGraphDimensions[0]+50+h_dist*(i+1),(k+1)*smallGraphDimensions[1]-75, fill='white')
                 # Vertical ticks
-                v_dist = (smallGraphDimensions[1]-125)/(masterGraphData[currentGraph]['tickCount']-1)
-                for i in range(masterGraphData[currentGraph]['tickCount']):
+                v_dist = (smallGraphDimensions[1]-125)/(masterGraphData[currentGraph]['ytickCount']-1)
+                for i in range(masterGraphData[currentGraph]['ytickCount']):
                     canvas.create_line(j*smallGraphDimensions[0]+50,k*smallGraphDimensions[1]+v_dist*i+50,j*smallGraphDimensions[0]+40,k*smallGraphDimensions[1]+v_dist*i+50, fill='white')
 
     # Testing solid vs dashed
