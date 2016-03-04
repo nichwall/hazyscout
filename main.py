@@ -45,6 +45,8 @@ def loadConfigFile():
         for i in range(len(configData['graphs'])):
             if configData['graphs'][i]['id'] == i:
                 print configData['graphs'][i]
+                if configData['graphs'][i]['xTickCount'] == "matchCount":
+                    configData['graphs'][i]['xTickCount'] = matchCount
                 masterGraphData.append(configData['graphs'][i])
     except:
         print "Error: Invalid config file"
@@ -107,6 +109,7 @@ def drawTeam(canvas, graphNumber, minX, minY, maxX, maxY, teamNumber, yTicks, xT
     elif color == 'magenta':
         yOffset = 5
 
+    print "maxX:",maxX,"minX:",minX,"Ticks:",xTicks
     h_dist = (maxX-minX)/xTicks
     v_dist = (maxY-minY)/yTicks
     solidCol = masterGraphData[graphNumber]['solidCol']
@@ -163,6 +166,10 @@ def drawGraph(canvas, state):
             v_dist = (largeGraphDimensions[1]/yCount-125)/(masterGraphData[currentGraph]['yTickCount']-1)
             for i in range(masterGraphData[currentGraph]['yTickCount']):
                 canvas.create_line(j*largeGraphDimensions[0]/xCount+50,k*largeGraphDimensions[1]/yCount+v_dist*i+50,j*largeGraphDimensions[0]/xCount+40,k*largeGraphDimensions[1]/yCount+v_dist*i+50, fill='white')
+
+            # Once the axis are drawn, graph the team
+            for i in range(len(teamVarsForDropdown)):
+                drawTeam(canvas, currentGraph, j*largeGraphDimensions[0]/xCount+50, k*largeGraphDimensions[1]/yCount+50, (j+1)*largeGraphDimensions[0]/xCount-50, (k+1)*largeGraphDimensions[1]/yCount-75, teamVarsForDropdown[i].get(), masterGraphData[currentGraph]['yTickCount'], masterGraphData[currentGraph]['xTickCount'], colors[i])
 
     # Testing solid vs dashed
     canvas.create_line(100,200,150,200, fill='red',     dash=(4,4), width=3)
