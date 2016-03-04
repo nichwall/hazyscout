@@ -226,8 +226,9 @@ def key(event):
         print "Exit!"
         sys.exit(0)
 
+    #for var in teamVarsForDropdown:
     for var in teamVarsForDropdown:
-        print var
+        print var.get()
     drawGraph(canvas,states[currentState])
 
 matchData = []
@@ -253,6 +254,8 @@ loadConfigFile()
 
 teamVarsForDropdown = [StringVar(root) for var in colors]
 teamSelection = [OptionMenu(root, var, *teamList) for var in teamVarsForDropdown]
+for i in teamVarsForDropdown:
+    i.set(0)
 
 drawGraph(canvas,states[currentState])
 drawComments(canvas,states[currentState])
