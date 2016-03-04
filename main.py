@@ -56,7 +56,7 @@ def loadConfigFile():
 # Load the team data #
 ######################
 def loadMatchData():
-    #try:
+    try:
         matchFile = open("matches.csv",'r')
         readed = matchFile.read().split("\n")[1:-1]
         matchFile.close()
@@ -69,26 +69,18 @@ def loadMatchData():
         readed = tempArr
 
         # Sort the data from the teams by team/match number for easier graphing
-        while len(readed) != 0:
-            minIndex = 0
-            minTeam = 0
-            minMatch = 0
-            for j in range(len(readed)):
-                tempR = readed[j]
-                # Check if the team number is the smallest thus far
-                if tempR[0] < minTeam:
-                    minIndex = i
-                    minTeam = tempR[0]
-                    minMatch = tempR[1]
-                elif tempR[0] == minTeam and tempR[1] < minMatch:
-                    minIndex = i
-                    minMatch = tempR[1]
-            matchData.append(readed.pop(minIndex))
-            if matchData[-1][0] not in teamList:
-                teamList.append(matchData[-1][0])
-    #except:
-    #    print "Error: Invalid match file"
-    #    sys.exit(2)
+        for j in range(len(readed)):
+            # New team
+            if readed[minIndex][0] not in teamList:
+                teamList.append(readed[minIndex][0])
+                matchData[str(readed[minIndex][0])] = [readed[minIndex][1:]]
+            else:
+                matchData[str(readed[minIndex][0])].append( readed[minIndex][1:] )
+
+        print "Match Data: ",matchData
+    except:
+        print "Error: Invalid match file"
+        sys.exit(2)
 
 def drawTeam(canvas, graphNumber, minX, minY, maxX, maxY, teamNumber, yTicks, xTicks, color):
     # Offset each of the teams a little bit so that they don't overlap
@@ -191,14 +183,14 @@ def key(event):
     drawComments(canvas, states[currentState])
 
 matchCount = 6
-matchData = []
+matchData = {}
 masterGraphData = []
 states = [State()]*9
 currentState = 0
 teamList = [0]
 
 loadConfigFile()
-loadMatchData()
+#loadMatchData()
 
 print "TEAMLIST:",teamList
 
@@ -213,10 +205,6 @@ root.title("Hazy Scout")
 canvas = Canvas(root, width=windowDimensions[0], height=windowDimensions[1])
 canvas.pack()
 
-#teamVarsForDropdown = [StringVar(root) for var in colors]
-#teamSelection = [OptionMenu(root, var, *teamList) for var in teamVarsForDropdown]
-#for i in teamVarsForDropdown:
-#    i.set(0)
 teamVarsForDropdown = [StringVar(root) for var in colors]
 teamSelection = [Text(root, width=5, height=1) for var in teamVarsForDropdown]
 for i in teamSelection:
@@ -230,6 +218,10 @@ drawComments(canvas,states[currentState])
 #text.pack()
 
 root.bind_all('<Key>',key)
+root.bind_class('Text', '<Return>', lambda e: None)
+root.bind_class('Text', 'w', lambda e: None)
+root.bind_class('Text', 's', lambda e: None)
+root.bind("<Return>", lambda e: "break")
 root.mainloop()
 
 sys.exit(0)
