@@ -172,24 +172,24 @@ def drawGraph(canvas, state):
             for i in range(masterGraphData[currentGraph]['yTickCount']):
                 canvas.create_line(j*smallGraphDimensions[0]+40,v_dist*i+75,j*smallGraphDimensions[0]+50,v_dist*i+75, fill='white')
     else:
-        for j in range(2):
-            for k in range(2):
-                #print "J:",j,"K:",k,"State:",state.graphCount
-                currentGraph = state.graphs[j*2+k]
-                #print "Number: ",state.graphCount,"\tCurrentGraph: ",currentGraph
+        for z in range(state.graphCount):
+            j = z/2
+            k = z%2
 
-                canvas.create_line(j*smallGraphDimensions[0]+50,k*smallGraphDimensions[1]+50,j*smallGraphDimensions[0]+50,(k+1)*smallGraphDimensions[1]-75, fill='white')
-                canvas.create_line(j*smallGraphDimensions[0]+50,(k+1)*smallGraphDimensions[1]-75,(j+1)*smallGraphDimensions[0]-50,(k+1)*smallGraphDimensions[1]-75, fill='white')
-                # Horizontal ticks
-                h_dist = (smallGraphDimensions[0]-100)/matchCount
-                for i in range(matchCount):
-                    canvas.create_line(j*smallGraphDimensions[0]+50+h_dist*(i+1),(k+1)*smallGraphDimensions[1]-65,j*smallGraphDimensions[0]+50+h_dist*(i+1),(k+1)*smallGraphDimensions[1]-75, fill='white')
-                # Vertical ticks
-                print "Current:",currentGraph
-                print "Master:",masterGraphData[currentGraph]
-                v_dist = (smallGraphDimensions[1]-125)/(masterGraphData[currentGraph]['yTickCount']-1)
-                for i in range(masterGraphData[currentGraph]['yTickCount']):
-                    canvas.create_line(j*smallGraphDimensions[0]+50,k*smallGraphDimensions[1]+v_dist*i+50,j*smallGraphDimensions[0]+40,k*smallGraphDimensions[1]+v_dist*i+50, fill='white')
+            currentGraph = state.graphs[j*2+k]
+
+            canvas.create_line(j*smallGraphDimensions[0]+50,k*smallGraphDimensions[1]+50,j*smallGraphDimensions[0]+50,(k+1)*smallGraphDimensions[1]-75, fill='white')
+            canvas.create_line(j*smallGraphDimensions[0]+50,(k+1)*smallGraphDimensions[1]-75,(j+1)*smallGraphDimensions[0]-50,(k+1)*smallGraphDimensions[1]-75, fill='white')
+            # Horizontal ticks
+            h_dist = (smallGraphDimensions[0]-100)/matchCount
+            for i in range(matchCount):
+                canvas.create_line(j*smallGraphDimensions[0]+50+h_dist*(i+1),(k+1)*smallGraphDimensions[1]-65,j*smallGraphDimensions[0]+50+h_dist*(i+1),(k+1)*smallGraphDimensions[1]-75, fill='white')
+            # Vertical ticks
+            print "Current:",currentGraph
+            print "Master:",masterGraphData[currentGraph]
+            v_dist = (smallGraphDimensions[1]-125)/(masterGraphData[currentGraph]['yTickCount']-1)
+            for i in range(masterGraphData[currentGraph]['yTickCount']):
+                canvas.create_line(j*smallGraphDimensions[0]+50,k*smallGraphDimensions[1]+v_dist*i+50,j*smallGraphDimensions[0]+40,k*smallGraphDimensions[1]+v_dist*i+50, fill='white')
 
     # Testing solid vs dashed
     canvas.create_line(100,200,150,200, fill='red',     dash=(4,4), width=3)
