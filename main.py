@@ -1,6 +1,9 @@
 import sys
-#import Tkinter as tk
-from Tkinter import *
+import yaml
+try:
+    from Tkinter import *
+except:
+    from tkinter import *
 
 
 UNIQUE_TEAMS = 6
@@ -10,47 +13,6 @@ colors = ['red','green','blue','yellow','orange','magenta']
 # Globals for graph data
 winHeight = 0
 winWidth = 0
-################
-# Graph object #
-################
-class Graph:
-# Initialize the graph instance
-    def __init__(self):
-        self.baseX = 0
-        self.baseY = 0
-        self.height = winHeight
-        self.width = winWidth
-
-        self.graphNumber = 0
-        self.xTicks = 6 # Matches
-        self.yTicks = 5 # Scores
-    def __init__(self, graphCount=1, matchCount=6, initalGraph=0):
-        if (graphCount > 4 or graphCount < 1):
-            print "Fatal error, bad graph count"
-            sys.exit(10)
-
-        if graphCount/2 == 0:
-            self.height = winHeight
-            self.baseY = 0
-        else:
-            self.height = winHeight/2
-            self.baseY = winHeight/2
-
-        if graphCount%2 == 1:
-            self.width = winWidth
-            self.baseX = 0
-        else:
-            self.width = winWidth/2
-            self.baseX = winWidth/2
-        self.graphNumber = initalGraph # Which graph to display
-        self.xTicks = matchCount # Matches
-        self.yTicks = masterGraphData[initialGraph]['ytickCount'] # Scores
-        self.graphID = graphID # Used to tell the graph where it appears on the screen
-# Draw the graph to the screen
-
-    def draw(self,canvas):
-        # Draw a bounding box around the entire graph instance
-        canvas.create_rectangle(self.baseX, self.baseY, self.baseX+self.width, self.baseY+self.height)
 
 #########################################
 # State of graphs for saving/workspaces #
@@ -75,29 +37,12 @@ class State:
 ######################
 # Configuration file #
 ######################
+masterGraphData = []
 def loadConfigFile():
     try:
-        configFile = open("config.txt",'r')
-        readed = configFile.read().split("\n")[:-1]
-        configFile.close()
-
-        matchCount = eval(readed[0])
-        readed = readed[1:]
-        # Load all of the graph data
-        for i in range(len(readed)):
-            tempSplit = readed[i].split("\t")
-
-            tempD = {}
-            tempD['id']            = int(tempSplit[0]) # Numerical id of graph, used in Graph as graphNumber
-            tempD['name']          =     tempSplit[1]  # Name of graph, displayed in dropdown
-            tempD['ytickCount']     = int(tempSplit[2]) # Count of ticks on the y-axis
-            tempD['solidCol']      = int(tempSplit[3]) # Column in the CSV file of the line that will be solid
-            tempD['dashCol']       =                -1 # Default to -1
-            if (len(tempSplit) == 5):
-                tempD['dashCol']   = int(tempSplit[4]) # Column in the CSV file of the line that will be dashed
-
-            masterGraphData.append(tempD)
-
+        configData = yaml.load(open("config.yaml"))
+        graphCount = configData['matchCount']
+        masterGraphData = configData['graphs']
     except:
         print "Error: Invalid config file"
         sys.exit(1)
@@ -278,7 +223,7 @@ def key(event):
 
 matchData = []
 masterGraphData = []
-matchCount = 6
+matchCount = 6 # Default, just in case
 states = [State()]*9
 currentState = 0
 teamList = [0,2,3,4,9]
