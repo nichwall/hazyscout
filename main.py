@@ -42,7 +42,10 @@ def loadConfigFile():
     try:
         configData = yaml.load(open("config.yaml"))
         graphCount = configData['matchCount']
-        masterGraphData = configData['graphs']
+        for i in range(len(configData['graphs'])):
+            if configData['graphs'][i]['id'] == i:
+                print configData['graphs'][i]
+                masterGraphData.append(configData['graphs'][i])
     except:
         print "Error: Invalid config file"
         sys.exit(1)
@@ -84,7 +87,7 @@ def loadMatchData():
                         minMatch = tS[1]
             matchData.append(tempR.pop(minIndex))
             if tempR[0] not in teamList:
-                tempList.append(int(tempR))
+                teamList.append(int(tempR[0]))
     except:
         print "Error: Invalid match file"
         sys.exit(2)
@@ -148,8 +151,8 @@ def drawGraph(canvas, state):
         for i in range(matchCount):
             canvas.create_line(125+h_dist*(i+1),largeGraphDimensions[1]-100,125+h_dist*(i+1),largeGraphDimensions[1]-90, fill='white')
         # Vertical ticks
-        v_dist = (largeGraphDimensions[1]-175)/(masterGraphData[currentGraph]['ytickCount']-1)
-        for i in range(masterGraphData[currentGraph]['ytickCount']):
+        v_dist = (largeGraphDimensions[1]-175)/(masterGraphData[currentGraph]['yTickCount']-1)
+        for i in range(masterGraphData[currentGraph]['yTickCount']):
             canvas.create_line(115,75+v_dist*i,125,75+v_dist*i, fill='white')
 
         # TODO Add the lines for the different teams
@@ -164,15 +167,16 @@ def drawGraph(canvas, state):
             for i in range(matchCount):
                 canvas.create_line(j*smallGraphDimensions[0]+50+h_dist*(i+1),windowDimensions[1]-100,j*smallGraphDimensions[0]+50+h_dist*(i+1),windowDimensions[1]-90, fill='white')
             # Vertical ticks
-            v_dist = (largeGraphDimensions[1]-175)/(masterGraphData[currentGraph]['ytickCount']-1)
+            v_dist = (largeGraphDimensions[1]-175)/(masterGraphData[currentGraph]['yTickCount']-1)
             print largeGraphDimensions[1]-175
-            for i in range(masterGraphData[currentGraph]['ytickCount']):
+            for i in range(masterGraphData[currentGraph]['yTickCount']):
                 canvas.create_line(j*smallGraphDimensions[0]+40,v_dist*i+75,j*smallGraphDimensions[0]+50,v_dist*i+75, fill='white')
     else:
         for j in range(2):
             for k in range(2):
-                currentGraph = state.graphs[j+k*2]
-                print "Number: ",state.graphCount,"\tCurrentGraph: ",currentGraph
+                #print "J:",j,"K:",k,"State:",state.graphCount
+                currentGraph = state.graphs[j*2+k]
+                #print "Number: ",state.graphCount,"\tCurrentGraph: ",currentGraph
 
                 canvas.create_line(j*smallGraphDimensions[0]+50,k*smallGraphDimensions[1]+50,j*smallGraphDimensions[0]+50,(k+1)*smallGraphDimensions[1]-75, fill='white')
                 canvas.create_line(j*smallGraphDimensions[0]+50,(k+1)*smallGraphDimensions[1]-75,(j+1)*smallGraphDimensions[0]-50,(k+1)*smallGraphDimensions[1]-75, fill='white')
@@ -181,8 +185,10 @@ def drawGraph(canvas, state):
                 for i in range(matchCount):
                     canvas.create_line(j*smallGraphDimensions[0]+50+h_dist*(i+1),(k+1)*smallGraphDimensions[1]-65,j*smallGraphDimensions[0]+50+h_dist*(i+1),(k+1)*smallGraphDimensions[1]-75, fill='white')
                 # Vertical ticks
-                v_dist = (smallGraphDimensions[1]-125)/(masterGraphData[currentGraph]['ytickCount']-1)
-                for i in range(masterGraphData[currentGraph]['ytickCount']):
+                print "Current:",currentGraph
+                print "Master:",masterGraphData[currentGraph]
+                v_dist = (smallGraphDimensions[1]-125)/(masterGraphData[currentGraph]['yTickCount']-1)
+                for i in range(masterGraphData[currentGraph]['yTickCount']):
                     canvas.create_line(j*smallGraphDimensions[0]+50,k*smallGraphDimensions[1]+v_dist*i+50,j*smallGraphDimensions[0]+40,k*smallGraphDimensions[1]+v_dist*i+50, fill='white')
 
     # Testing solid vs dashed
@@ -216,9 +222,12 @@ def key(event):
     elif event.char == 's':
         print "Decreasing..."
         states[currentState].removeGraph()
+    elif event.char == 'q':
+        print "Exit!"
+        sys.exit(0)
 
     for var in teamVarsForDropdown:
-        print teamList[0]
+        print var
     drawGraph(canvas,states[currentState])
 
 matchData = []
@@ -245,10 +254,6 @@ loadConfigFile()
 teamVarsForDropdown = [StringVar(root) for var in colors]
 teamSelection = [OptionMenu(root, var, *teamList) for var in teamVarsForDropdown]
 
-states[currentState].addGraph()
-states[currentState].graphs[1]=1
-states[currentState].addGraph()
-states[currentState].addGraph()
 drawGraph(canvas,states[currentState])
 drawComments(canvas,states[currentState])
 
