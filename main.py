@@ -3,6 +3,7 @@ import yaml
 import json
 import random
 from pprint import pprint
+from os import walk
 from Tkinter import *
 
 print "Running"
@@ -56,25 +57,55 @@ def loadConfigFile():
         print "Error: Invalid config file"
         sys.exit(1)
 
+##############
+# Parse JSON #
+##############
+def getFiles(path):
+    return next(walk(path))[2]
+
+
+def recurse(d, array, configData):
+    for k, v in d.iteritems():
+        if isinstance(v, dict):
+            array = recurse(v, array, configData)
+        else:
+            for i, data in enumerate(configData):
+                if k == data:
+                    array[i] = int(v)
+                    break
+    return array
+
+
 def getMatchDataFromJson():
-    ret = []
-    for i in range(50):
-        temp = []
-        for j in range(26):
-            temp.append(random.randint(0,6))
-        temp[0] = random.randint(1,10)
-        ret.append(temp)
-        if (temp[0] not in teamList):
-            teamList.append(temp[0])
-    return ret
+    arr = []
+
+    # Load config
+    configData = open("jsonConfig.txt").read().split('\n')
+
+    jsonPath = "jsonFiles/"
+    files = getFiles(jsonPath)
+    files.sort()
+
+    # Loop through all of the json files and convert them into a nice csv
+    for f in files:
+        js = json.load(open(jsonPath+f))
+        arr.append(recurse(js, [0]*len(configData), configData))
+
+    pprint(arr)
+    return arr
 
 ######################
 # Load the team data #
 ######################
 def loadMatchData():
-    try:
+#    try:
         # Get the array from the JSONs
         data = getMatchDataFromJson()
+        # Create all the teamList stuff
+        for i in data:
+            if i[0] not in teamList:
+                teamList.append(i[0])
+
         print "Data:"
         pprint(data)
 
@@ -87,9 +118,11 @@ def loadMatchData():
                 teamMatches[j]['dashed'] = []
             matchData[i] = teamMatches
 
+        print "Team list: ",teamList
         # Looping through data/graphs
         for i in data:
             currentTeam = i[0]
+            print i
             for j in graphList:
                 currentGraph = matchData[currentTeam][j]
 # Check if we are adding data to a graph that uses the match count
@@ -108,9 +141,9 @@ def loadMatchData():
                     for k in range(len(masterGraphData[j]['xCols'])):
                         currentGraph['solid'][k] += i[masterGraphData[j]['xCols'][k]]
                 matchData[currentTeam][j] = currentGraph
-    except:
-        print "Error: Invalid match file"
-        sys.exit(2)
+#    except:
+#        print "Error: Invalid match file"
+#        sys.exit(2)
 
 def drawTeam(canvas, graphName, minX, minY, maxX, maxY, teamNumber, yTicks, xTicks, color):
     # Offset each of the teams a little bit so that they don't overlap
