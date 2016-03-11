@@ -35,6 +35,9 @@ class State:
             print "Popping"
             self.graphCount -= 1
             self.graphs.pop(index)
+    def loop(self):
+        for i in range(self.graphCount):
+            self.graphs[i] = graphDropdown[i].get()
 
 ######################
 # Configuration file #
@@ -55,11 +58,11 @@ def loadConfigFile():
 
 def getMatchDataFromJson():
     ret = []
-    for i in range(25):
+    for i in range(50):
         temp = []
         for j in range(26):
-            temp.append(random.randint(0,10))
-#        temp[0] = random.randint(1,6000)
+            temp.append(random.randint(0,6))
+        temp[0] = random.randint(1,10)
         ret.append(temp)
         if (temp[0] not in teamList):
             teamList.append(temp[0])
@@ -75,7 +78,6 @@ def loadMatchData():
         print "Data:"
         pprint(data)
 
-        matchData = {}
         # Create the teamList elements for matchData
         for i in teamList:
             teamMatches = {}
@@ -106,8 +108,6 @@ def loadMatchData():
                     for k in range(len(masterGraphData[j]['xCols'])):
                         currentGraph['solid'][k] += i[masterGraphData[j]['xCols'][k]]
                 matchData[currentTeam][j] = currentGraph
-        print "After loading points"
-        pprint(matchData)
     except:
         print "Error: Invalid match file"
         sys.exit(2)
@@ -131,16 +131,19 @@ def drawTeam(canvas, graphName, minX, minY, maxX, maxY, teamNumber, yTicks, xTic
     h_dist = (maxX-minX)/xTicks # Distance to move on X diff
     v_dist = (maxY-minY)/yTicks # Distance to move on Y diff
 
-    lastPoint  = (minX,maxY)
-
     # Loop through the solid lines
+    lastPoint  = (minX,maxY+yOffset)
     for i in matchData[teamNumber][graphName]['solid']:
-        newPoint = ( minX+i[0]*h_dist, maxY-i[1]*v_dist  )
-        canvas.create_line(lastPoint, newPoint, fill=color, width=3)
+        newPoint = ( minX+i[0]*h_dist, maxY-i[1]*v_dist+yOffset  )
+        if (lastPoint != (minX, maxY+yOffset)):
+            canvas.create_line(lastPoint, newPoint, fill=color, width=3)
+        lastPoint  = newPoint
     # Loop through the dashed lines
+    lastPoint  = (minX,maxY+yOffset)
     for i in matchData[teamNumber][graphName]['dashed']:
-        newPoint = ( minX+i[0]*h_dist, maxY-i[1]*v_dist  )
+        newPoint = ( minX+i[0]*h_dist, maxY-i[1]*v_dist+yOffset  )
         canvas.create_line(lastPoint, newPoint, fill=color, width=3, dash=(4,4))
+        lastPoint  = newPoint
 
 
 def drawGraph(canvas, state):
@@ -168,21 +171,27 @@ def drawGraph(canvas, state):
             else:
                 graphSelection[z].place(x = j*largeGraphDimensions[0]/2, y= (k+1)*largeGraphDimensions[1]/2-30)
 
+            minX =  j   *largeGraphDimensions[0]/xCount+50
+            maxX = (j+1)*largeGraphDimensions[0]/xCount-50
+            minY =  k   *largeGraphDimensions[1]/yCount+50
+            maxY = (k+1)*largeGraphDimensions[1]/yCount-75
             # Vertical line
-            canvas.create_line(j*largeGraphDimensions[0]/xCount+50, k   *largeGraphDimensions[1]/yCount+50, j   *largeGraphDimensions[0]/xCount+50,(k+1)*largeGraphDimensions[1]/yCount-75, fill='white')
+            canvas.create_line(minX, minY, minX, maxY, fill='white')
             # Horizontal line
-            canvas.create_line(j*largeGraphDimensions[0]/xCount+50,(k+1)*largeGraphDimensions[1]/yCount-75,(j+1)*largeGraphDimensions[0]/xCount-50,(k+1)*largeGraphDimensions[1]/yCount-75, fill='white')
+            canvas.create_line(minX, maxY, maxX, maxY, fill='white')
             # Horizontal ticks
             h_dist = (largeGraphDimensions[0]/xCount-100)/masterGraphData[currentGraph]['xTickCount']
-            for i in range(matchCount):
-                canvas.create_line(j*largeGraphDimensions[0]/xCount+50+h_dist*(i+1),(k+1)*largeGraphDimensions[1]/yCount-65,j*largeGraphDimensions[0]/xCount+50+h_dist*(i+1),(k+1)*largeGraphDimensions[1]/yCount-75, fill='white')
+            for i in range(masterGraphData[currentGraph]['xTickCount']):
+                canvas.create_line( minX+h_dist*(i+1), maxY+10, minX+h_dist*(i+1), maxY, fill='white')
             # Vertical ticks
             v_dist = (largeGraphDimensions[1]/yCount-125)/(masterGraphData[currentGraph]['yTickCount']-1)
             for i in range(masterGraphData[currentGraph]['yTickCount']):
                 canvas.create_line(j*largeGraphDimensions[0]/xCount+50,k*largeGraphDimensions[1]/yCount+v_dist*i+50,j*largeGraphDimensions[0]/xCount+40,k*largeGraphDimensions[1]/yCount+v_dist*i+50, fill='white')
 
             # Once the axis are drawn, graph the team
-            #for i in range(len(teamVarsForDropdown)):
+#def drawTeam(canvas, graphName, minX, minY, maxX, maxY, teamNumber, yTicks, xTicks, color):
+            for i in range(len(teamVarsForDropdown)):
+                drawTeam(canvas, currentGraph, minX, minY, maxX, maxY, int(teamSelection[i].get("1.0",'end-1c')), masterGraphData[currentGraph]['yTickCount'], masterGraphData[currentGraph]['xTickCount'], colors[i])
 
 def drawComments(canvas, state):
     for i in range(UNIQUE_TEAMS):
@@ -206,6 +215,8 @@ def key(event):
         print "Exit!"
         sys.exit(0)
 
+    for s in states:
+        s.loop()
     drawGraph(canvas, states[currentState])
     drawComments(canvas, states[currentState])
 
@@ -244,7 +255,6 @@ for i in range(4):
 graphSelection = [OptionMenu(root, var, *graphList) for var in graphDropdown]
 for i in graphDropdown:
     i.set("Showed Up")
-    print i
 
 drawGraph(canvas,states[currentState])
 drawComments(canvas,states[currentState])

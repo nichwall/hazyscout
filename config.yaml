@@ -38,8 +38,8 @@ graphs:
       xCols:        [-1]
     - name:         Defenses
       usesMatch:    0
-      xTickCount:   5
-      yTickCount:   3
+      xTickCount:   9
+      yTickCount:   30
       solidCol:     -1
       dashCol:      -1
       xCols:        [11,12,13,14,15,16,17,18,19]
@@ -96,7 +96,7 @@ graphs:
     - name:         Showed Up
       usesMatch:    1
       xTickCount:   matchCount
-      yTickCount:   1
+      yTickCount:   2
       solidCol:     2
       dashCol:      -1
       xCols:        [-1]
