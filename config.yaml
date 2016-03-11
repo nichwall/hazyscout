@@ -1,66 +1,102 @@
 matchCount:     6
 
 graphs:
-    - id:           0
-      name:         High Goal
+    - name:         Tele High Goal
+      usesMatch:    1
       xTickCount:   matchCount
       yTickCount:   7
-      solidCol:     2
+      solidCol:     8
       dashCol:      -1
       xCols:        [-1]
-    - id:           1
-      name:         Low Goal
+    - name:         Tele Low Goal
+      usesMatch:    1
       xTickCount:   matchCount
       yTickCount:   7
-      solidCol:     3
+      solidCol:     7
       dashCol:      -1
       xCols:        [-1]
-    - id:           2
-      name:         All Goal
+    - name:         Auto High Goal
+      usesMatch:    1
       xTickCount:   matchCount
       yTickCount:   7
-      solidCol:     2
-      dashCol:      3
+      solidCol:     8
+      dashCol:      -1
       xCols:        [-1]
-    - id:           3
-      name:         Defenses
+    - name:         Auto Low Goal
+      usesMatch:    1
+      xTickCount:   matchCount
+      yTickCount:   7
+      solidCol:     7
+      dashCol:      -1
+      xCols:        [-1]
+    - name:         All Tele Goal
+      usesMatch:    1
+      xTickCount:   matchCount
+      yTickCount:   7
+      solidCol:     8
+      dashCol:      7
+      xCols:        [-1]
+    - name:         Defenses
+      usesMatch:    0
       xTickCount:   5
       yTickCount:   3
       solidCol:     -1
       dashCol:      -1
-      xCols:        [4,5,6,7,8]
-    - id:           4
-      name:         Human Player
+      xCols:        [11,12,13,14,15,16,17,18,19]
+    - name:         Human Player
+      usesMatch:    1
       xTickCount:   matchCount
       yTickCount:   3
-      solidCol:     9
+      solidCol:     25
       dashCol:      -1
       xCols:        [-1]
-    - id:           5
-      name:         Breaks
+    - name:         Breaks
+      usesMatch:    1
+      usesMatch:    1
       xTickCount:   matchCount
       yTickCount:   4
       solidCol:     10
       dashCol:      -1
       xCols:        [-1]
-    - id:           6
-      name:         Fouls
+    - name:         Fouls
+      usesMatch:    1
       xTickCount:   matchCount
       yTickCount:   5
-      solidCol:     11
+      solidCol:     9
       dashCol:      -1
       xCols:        [-1]
-    - id:           7
-      name:         Break/Match
+    - name:         Break/Foul
+      usesMatch:    1
       xTickCount:   matchCount
       yTickCount:   5
       solidCol:     10
       dashCol:      11
       xCols:        [-1]
-    - id:           8
-      name:         Scaling
+    - name:         Challenging
+      usesMatch:    1
       xTickCount:   matchCount
       yTickCount:   2
-      solidCol:     12
+      solidCol:     20
+      dashCol:      -1
+      xCols:        [-1]
+    - name:         Defence of Robot
+      usesMatch:    1
+      xTickCount:   matchCount
+      yTickCount:   3
+      solidCol:     24
+      dashCol:      -1
+      xCols:        [-1]
+    - name:         Auto Defences
+      usesMatch:    1
+      xTickCount:   matchCount
+      yTickCount:   2
+      solidCol:     3
+      dashCol:      4
+      xCols:        [-1]
+    - name:         Showed Up
+      usesMatch:    1
+      xTickCount:   matchCount
+      yTickCount:   1
+      solidCol:     2
       dashCol:      -1
       xCols:        [-1]

@@ -1,9 +1,11 @@
 import sys
 import yaml
-try:
-    from Tkinter import *
-except:
-    from tkinter import *
+import json
+import random
+from pprint import pprint
+from Tkinter import *
+
+print "Running"
 
 
 UNIQUE_TEAMS = 6
@@ -21,11 +23,11 @@ class State:
     def __init__(self):
         self.graphCount = 1
         self.teams = [0]*UNIQUE_TEAMS
-        self.graphs = [0]*self.graphCount
+        self.graphs = ["Tele High Goal"]*self.graphCount
     def addGraph(self):
         if (self.graphCount < 4):
             self.graphCount += 1
-            self.graphs.append(0)
+            self.graphs.append("Tele High Goal")
     def removeGraph(self, index=-1):
         if (index == -1):
             index = self.graphCount - 1
@@ -42,47 +44,75 @@ def loadConfigFile():
         configData = yaml.load(open("config.yaml"))
         matchCount = configData['matchCount']
         for i in range(len(configData['graphs'])):
-            if configData['graphs'][i]['id'] == i:
-                #print configData['graphs'][i]
-                if configData['graphs'][i]['xTickCount'] == "matchCount":
-                    configData['graphs'][i]['xTickCount'] = matchCount
-                masterGraphData.append(configData['graphs'][i])
+            if configData['graphs'][i]['xTickCount'] == "matchCount":
+                configData['graphs'][i]['xTickCount'] = matchCount
+            masterGraphData[configData['graphs'][i]['name']] = configData['graphs'][i]
+            graphList.append( configData['graphs'][i]['name'] )
+        pprint(masterGraphData)
     except:
         print "Error: Invalid config file"
         sys.exit(1)
 
+def getMatchDataFromJson():
+    ret = []
+    for i in range(25):
+        temp = []
+        for j in range(26):
+            temp.append(random.randint(0,10))
+#        temp[0] = random.randint(1,6000)
+        ret.append(temp)
+        if (temp[0] not in teamList):
+            teamList.append(temp[0])
+    return ret
 
 ######################
 # Load the team data #
 ######################
 def loadMatchData():
     try:
-        matchFile = open("matches.csv",'r')
-        readed = matchFile.read().split("\n")[1:-1]
-        matchFile.close()
+        # Get the array from the JSONs
+        data = getMatchDataFromJson()
+        print "Data:"
+        pprint(data)
 
-        # Convert the read array to 2D array
-        tempArr = []
-        for i in readed:
-            tempArr.append(i.split(","))
-            tempArr[-1] = map(int, tempArr[-1]) # Converts the array to an array of ints
-        readed = tempArr
+        matchData = {}
+        # Create the teamList elements for matchData
+        for i in teamList:
+            teamMatches = {}
+            for j in graphList:
+                teamMatches[j] = {}
+                teamMatches[j]['solid'] = []
+                teamMatches[j]['dashed'] = []
+            matchData[i] = teamMatches
 
-        # Sort the data from the teams by team/match number for easier graphing
-        for j in range(len(readed)):
-            # New team
-            if readed[minIndex][0] not in teamList:
-                teamList.append(readed[minIndex][0])
-                matchData[str(readed[minIndex][0])] = [readed[minIndex][1:]]
-            else:
-                matchData[str(readed[minIndex][0])].append( readed[minIndex][1:] )
-
-        print "Match Data: ",matchData
+        # Looping through data/graphs
+        for i in data:
+            currentTeam = i[0]
+            for j in graphList:
+                currentGraph = matchData[currentTeam][j]
+# Check if we are adding data to a graph that uses the match count
+                if ( masterGraphData[j]['usesMatch'] == 1 ):
+                    # Solid line
+                    currentGraph['solid'].append( [ len(currentGraph['solid'])+1 , i[masterGraphData[j]['solidCol']] ] )
+                    # Dashed line?
+                    if ( masterGraphData[j]['dashCol'] != -1 ):
+                        currentGraph['dashed'].append( [ len(currentGraph['dashed'])+1 , i[masterGraphData[j]['dashCol']] ] )
+# Otherwise, do the math for match data (need to fix this for future games, but it works for now)
+                else:
+                    # Check if we need to make the empyt array for the graphData
+                    if ( len(currentGraph['solid']) == 0 ):
+                        currentGraph['solid'] = [0]*len(masterGraphData[j]['xCols'])
+                    # Loop through xCols
+                    for k in range(len(masterGraphData[j]['xCols'])):
+                        currentGraph['solid'][k] += i[masterGraphData[j]['xCols'][k]]
+                matchData[currentTeam][j] = currentGraph
+        print "After loading points"
+        pprint(matchData)
     except:
         print "Error: Invalid match file"
         sys.exit(2)
 
-def drawTeam(canvas, graphNumber, minX, minY, maxX, maxY, teamNumber, yTicks, xTicks, color):
+def drawTeam(canvas, graphName, minX, minY, maxX, maxY, teamNumber, yTicks, xTicks, color):
     # Offset each of the teams a little bit so that they don't overlap
     yOffset = 0
     if color == 'red':
@@ -98,28 +128,19 @@ def drawTeam(canvas, graphNumber, minX, minY, maxX, maxY, teamNumber, yTicks, xT
     elif color == 'magenta':
         yOffset = 5
 
-    h_dist = (maxX-minX)/xTicks
-    v_dist = (maxY-minY)/yTicks
-    solidCol = masterGraphData[graphNumber]['solidCol']
-    dashCol = masterGraphData[graphNumber]['dashCol']
+    h_dist = (maxX-minX)/xTicks # Distance to move on X diff
+    v_dist = (maxY-minY)/yTicks # Distance to move on Y diff
 
-    lastSolidPoint = (-10,-10)
-    lastDashPoint  = (-10,-10)
-    for i in range(len(matchList)):
-        if (matchList[i][0] == teamNumber):
-            # Solid line
-            xPos = matchList[i][1]*h_dist+minX
-            yPos = maxY-(matchList[i][solidCol]+yOffset)
-            if (lastSolidPoint[0] > -10):
-                canvas.create_line(lastSolidPoint, xPos, yPos, fill=color, width=3)
-            lastSolidPoint = (xPos, yPos)
+    lastPoint  = (minX,maxY)
 
-            # Dashed line
-            if (dashCol != -1):
-                yPos = maxY-(matchList[i][dashCol]+yOffset)
-                if (lastDashPoint[0] > -10):
-                    canvas.create_line(lastDashPoint, xPos, yPos, fill=color, width=3, dash=(4,4))
-                lastDashPoint = (xPos, yPos)
+    # Loop through the solid lines
+    for i in matchData[teamNumber][graphName]['solid']:
+        newPoint = ( minX+i[0]*h_dist, maxY-i[1]*v_dist  )
+        canvas.create_line(lastPoint, newPoint, fill=color, width=3)
+    # Loop through the dashed lines
+    for i in matchData[teamNumber][graphName]['dashed']:
+        newPoint = ( minX+i[0]*h_dist, maxY-i[1]*v_dist  )
+        canvas.create_line(lastPoint, newPoint, fill=color, width=3, dash=(4,4))
 
 
 def drawGraph(canvas, state):
@@ -140,6 +161,12 @@ def drawGraph(canvas, state):
             k = z/2
 
             currentGraph = state.graphs[j+k*2]
+            print "Current Graph: ",currentGraph
+# Added graph selectors
+            if (k == 0):
+                graphSelection[z].place(x = j*largeGraphDimensions[0]/2, y= k*largeGraphDimensions[1]/2)
+            else:
+                graphSelection[z].place(x = j*largeGraphDimensions[0]/2, y= (k+1)*largeGraphDimensions[1]/2-30)
 
             # Vertical line
             canvas.create_line(j*largeGraphDimensions[0]/xCount+50, k   *largeGraphDimensions[1]/yCount+50, j   *largeGraphDimensions[0]/xCount+50,(k+1)*largeGraphDimensions[1]/yCount-75, fill='white')
@@ -184,20 +211,20 @@ def key(event):
 
 matchCount = 6
 matchData = {}
-masterGraphData = []
+masterGraphData = {}
 states = [State()]*9
 currentState = 0
 teamList = [0]
+graphList = []
 
 loadConfigFile()
-#loadMatchData()
+loadMatchData()
 
 print "TEAMLIST:",teamList
 
 windowDimensions = (1024,660)
 commentsDimensions = (224,windowDimensions[1]/6)
 largeGraphDimensions = (800,windowDimensions[1])
-smallGraphDimensions = (400,windowDimensions[1]/2)
 
 root = Tk()
 root.geometry("%dx%d" % windowDimensions)
@@ -205,34 +232,52 @@ root.title("Hazy Scout")
 canvas = Canvas(root, width=windowDimensions[0], height=windowDimensions[1])
 canvas.pack()
 
+# Team number textEntry
 teamVarsForDropdown = [StringVar(root) for var in colors]
 teamSelection = [Text(root, width=5, height=1) for var in teamVarsForDropdown]
 for i in teamSelection:
     i.insert(END,"0")
+# Graph Selector
+graphDropdown = [StringVar(root) for var in range(4)]
+for i in range(4):
+    graphDropdown[i].set(i+1)
+graphSelection = [OptionMenu(root, var, *graphList) for var in graphDropdown]
+for i in graphDropdown:
+    i.set("Showed Up")
+    print i
 
 drawGraph(canvas,states[currentState])
 drawComments(canvas,states[currentState])
 
-#text = Text(root)
-#text.insert(INSERT,"Testing things! Lots and lots of letters....a eu8fagoc u7a,f.g u78aeod uba7fcgu dthjomqeufgcdhtao emugcaoht epm.,tha pmacoth umeoauthym.,9ugth nmeu.pugchte nom.,89geh otmugoh tem.pguoeh utrmcue8arc meuoigreh tmuearogeh emuorch utcmuorc tcm.rcoe m")
-#text.pack()
-
 root.bind_all('<Key>',key)
 root.bind_class('Text', '<Return>', lambda e: None)
-root.bind_class('Text', 'w', lambda e: None)
+root.bind_class('Text', 'a', lambda e: None)
+root.bind_class('Text', 'b', lambda e: None)
+root.bind_class('Text', 'c', lambda e: None)
+root.bind_class('Text', 'd', lambda e: None)
+root.bind_class('Text', 'e', lambda e: None)
+root.bind_class('Text', 'f', lambda e: None)
+root.bind_class('Text', 'g', lambda e: None)
+root.bind_class('Text', 'h', lambda e: None)
+root.bind_class('Text', 'i', lambda e: None)
+root.bind_class('Text', 'j', lambda e: None)
+root.bind_class('Text', 'k', lambda e: None)
+root.bind_class('Text', 'l', lambda e: None)
+root.bind_class('Text', 'm', lambda e: None)
+root.bind_class('Text', 'n', lambda e: None)
+root.bind_class('Text', 'o', lambda e: None)
+root.bind_class('Text', 'p', lambda e: None)
+root.bind_class('Text', 'q', lambda e: None)
+root.bind_class('Text', 'r', lambda e: None)
 root.bind_class('Text', 's', lambda e: None)
+root.bind_class('Text', 't', lambda e: None)
+root.bind_class('Text', 'u', lambda e: None)
+root.bind_class('Text', 'v', lambda e: None)
+root.bind_class('Text', 'w', lambda e: None)
+root.bind_class('Text', 'x', lambda e: None)
+root.bind_class('Text', 'y', lambda e: None)
+root.bind_class('Text', 'z', lambda e: None)
 root.bind("<Return>", lambda e: "break")
 root.mainloop()
 
 sys.exit(0)
-
-var = tk.StringVar(root)
-var.set('red')
-
-option = tk.OptionMenu(root, var, *colors)
-option.pack(side='left', padx=10, pady=10)
-
-button = tk.Button(root, text='check value selected', command=select)
-button.pack(side='left', padx=20, pady=10)
-
-root.mainloop()
