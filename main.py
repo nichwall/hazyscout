@@ -136,10 +136,12 @@ def loadMatchData():
                 else:
                     # Check if we need to make the empyt array for the graphData
                     if ( len(currentGraph['solid']) == 0 ):
-                        currentGraph['solid'] = [0]*len(masterGraphData[j]['xCols'])
+                        for z in range(len(masterGraphData[j]['xCols'])):
+                            currentGraph['solid'].append([ z+1, 0 ])
+#                        currentGraph['solid'] = [0]*len(masterGraphData[j]['xCols'])
                     # Loop through xCols
-                    for k in range(len(masterGraphData[j]['xCols'])):
-                        currentGraph['solid'][k] += i[masterGraphData[j]['xCols'][k]]
+                    for k in range(len(currentGraph['solid'])):
+                        currentGraph['solid'][k][1] += i[masterGraphData[j]['xCols'][k]]
                 matchData[currentTeam][j] = currentGraph
 #    except:
 #        print "Error: Invalid match file"
@@ -167,6 +169,7 @@ def drawTeam(canvas, graphName, minX, minY, maxX, maxY, teamNumber, yTicks, xTic
     # Loop through the solid lines
     lastPoint  = (minX,maxY+yOffset)
     for i in matchData[teamNumber][graphName]['solid']:
+        pprint(matchData[teamNumber][graphName]['solid'])
         newPoint = ( minX+i[0]*h_dist, maxY-i[1]*v_dist+yOffset  )
         if (lastPoint != (minX, maxY+yOffset)):
             canvas.create_line(lastPoint, newPoint, fill=color, width=3)
