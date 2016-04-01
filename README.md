@@ -12,8 +12,9 @@ Make sure that `jsonConfig.txt` and `config.yaml` are located in the root folder
 
 Controls
 --------
-W. Increase graph count
-S. Decrease graph count
-Q. Quit
+* W. Increase graph count
+* S. Decrease graph count
+* Q. Quit
+
 * Colored boxes allow for team selection
 * Dropdowns allow for selection of graph display
