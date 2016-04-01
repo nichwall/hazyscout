@@ -2,7 +2,7 @@ HazyScout
 =========
 Scouting app viewer, FIRST Stronghold, FRC 418
 
-This is a Python 2.7 script that is meant to work in conjunction with [Hazy Scout](https://play.google.com/store/apps/details?id=io.github.nichwall.hazyScout "Hazy Scout on Google Play).
+This is a Python 2.7 script that is meant to work in conjunction with [Hazy Scout](https://play.google.com/store/apps/details?id=io.github.nichwall.hazyScout "Hazy Scout on Google Play").
 
 Usage
 -----
